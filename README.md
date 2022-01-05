@@ -1,2 +1,3 @@
-# hikepkg-template
-template for HIKe packages
+# tutorial HIKe package
+
+ tutorial package for HIKe programmers 
