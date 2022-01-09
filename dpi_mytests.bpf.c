@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 
 /* HIKe Prog Name comes always first */
-#define HIKE_PROG_NAME    dpi
+#define HIKE_PROG_NAME    dpi_unlimited
 
 /*
  * works on IPv6 packets
@@ -169,8 +169,21 @@ HIKE_PROG(HIKE_PROG_NAME) {
   pshm->p1[4] = 'a';
   pshm->p1[5] = 'r';
   pshm->p1[6] = '\0';
-
   keyword = &pshm->p1[0];
+
+  if (udp_plen>=BUF_LEN) {
+    p = (char *)cur_header_pointer(ctx, cur, udp_poff, BUF_LEN);
+    if (unlikely(!p))
+      goto drop;
+    for (i = 0; (i < BUF_LEN) ; ++i) {
+      if (keyword[i]==0)
+        goto match;
+      if (p[i] != keyword[i])
+        goto out;
+    }
+    goto out;
+  }
+
   for (i = 0; (i < BUF_LEN) ; ++i) {
     if (i>=udp_plen) 
       goto out;
@@ -184,6 +197,18 @@ HIKE_PROG(HIKE_PROG_NAME) {
     udp_poff+=1;
   }
   goto out;
+
+
+  // p = (char *)cur_header_pointer(ctx, cur, udp_poff, udp_plen);
+  // if (unlikely(!p))
+  //   goto drop;
+  // for (i = 0; (i < udp_plen) ; ++i) {
+  //   if (keyword[i]==0)
+  //     goto match;
+  //   if (p[i] != keyword[i])
+  //     goto out;
+  // }
+  // goto out;
 
 match:
   HVM_RET = 1;

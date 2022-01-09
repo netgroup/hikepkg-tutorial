@@ -148,7 +148,11 @@ HIKE_PROG(HIKE_PROG_NAME) {
   DEBUG_HKPRG_PRINT("UDP payload len: %d", udp_plen);
 
   udp_poff = cur->dataoff + sizeof(*udph);
-    
+
+  p = (char *)cur_header_pointer(ctx, cur, udp_poff, BUF_LEN);
+  if (unlikely(!p))
+    goto drop;
+
   HVM_RET = 0;
 
   /* reserve some space for storing the string to be searched */
@@ -165,23 +169,14 @@ HIKE_PROG(HIKE_PROG_NAME) {
   pshm->p1[0] = 'f';
   pshm->p1[1] = 'o';
   pshm->p1[2] = 'o';
-  pshm->p1[3] = 'b';
-  pshm->p1[4] = 'a';
-  pshm->p1[5] = 'r';
-  pshm->p1[6] = '\0';
+  pshm->p1[3] = '\0';
 
   keyword = &pshm->p1[0];
   for (i = 0; (i < BUF_LEN) ; ++i) {
-    if (i>=udp_plen) 
-      goto out;
-    p = (char *)cur_header_pointer(ctx, cur, udp_poff, 1);
-    if (unlikely(!p))
-      goto drop;
     if (keyword[i]==0)
       goto match;
-    if (p[0] != keyword[i])
+    if (p[i] != keyword[i])
       goto out;
-    udp_poff+=1;
   }
   goto out;
 
