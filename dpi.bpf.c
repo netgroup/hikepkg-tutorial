@@ -93,7 +93,7 @@ HIKE_PROG(HIKE_PROG_NAME) {
   __u64 display;
   __u64 display2;
   __u16 udp_plen;
-  __u16 udp_poff;
+  __u16 udp_poff; //udp payload offset 
 
   char *p;
   char *keyword;
@@ -111,6 +111,8 @@ HIKE_PROG(HIKE_PROG_NAME) {
   /* no need for checking cur != NULL here */
 
   // ipv6_find_hdr is defined in parse_helpers.h
+  // when the fourth parameter is -1, it returns the 
+  // "layer 4" final protocol
   ret = ipv6_find_hdr(ctx, cur, &offset, -1, NULL, NULL);
   if (unlikely(ret < 0)) {
     switch (ret) {
